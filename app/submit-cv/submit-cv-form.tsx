@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown, Upload } from "lucide-react";
 import type { ChangeEvent, DragEvent, FormEvent } from "react";
 import { useRef, useState } from "react";
 
@@ -117,7 +118,7 @@ export function SubmitCvForm() {
                 ))}
               </select>
               <span className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-slate-500">
-                <ChevronDownIcon />
+                <ChevronDown className="h-4 w-4" strokeWidth={1.8} />
               </span>
             </div>
           }
@@ -215,7 +216,7 @@ export function SubmitCvForm() {
             />
             <div className="pointer-events-none flex flex-col items-center">
               <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] text-indigo-200">
-                <UploadIcon />
+                <Upload className="h-8 w-8" strokeWidth={1.8} />
               </span>
               <p className="mt-4 text-base text-slate-200">
                 Drag and drop your CV here or{" "}
@@ -269,42 +270,5 @@ function FormField({
     </div>
   );
 }
-
-function ChevronDownIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-4 w-4"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m6 9 6 6 6-6" />
-    </svg>
-  );
-}
-
-function UploadIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-8 w-8"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 16V4" />
-      <path d="m7 9 5-5 5 5" />
-      <path d="M5 20h14" />
-    </svg>
-  );
-}
-
 const inputClassName =
   "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15";

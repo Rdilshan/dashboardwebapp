@@ -1,4 +1,13 @@
 import type { Metadata } from "next";
+import {
+  BadgeCheck,
+  CalendarDays,
+  FileText,
+  GraduationCap,
+  MonitorSmartphone,
+  Shield,
+  Target,
+} from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -11,17 +20,17 @@ const overviewCards = [
     title: "Objectives",
     description:
       "Gain practical industry experience, apply theoretical knowledge to real-world problems, and build professional networks.",
-    icon: <TargetIcon />,
+    icon: <Target className="h-8 w-8" strokeWidth={1.8} />,
   },
   {
     title: "Prerequisites",
     description:
       "Complete all Year 2 core modules, maintain a cumulative GPA of 2.0 or higher, and secure departmental approval.",
-    icon: <CheckBadgeIcon />,
+    icon: <BadgeCheck className="h-8 w-8" strokeWidth={1.8} />,
   },
   {
     title: "Key Dates",
-    icon: <CalendarIcon />,
+    icon: <CalendarDays className="h-8 w-8" strokeWidth={1.8} />,
     dates: [
       ["CV Submission", "Oct 15 - Oct 30"],
       ["Interviews", "November"],
@@ -36,21 +45,21 @@ const portalCards = [
     description:
       "Submit your student details and upload your CV to the placement database.",
     href: "/submit-cv",
-    icon: <DocumentIcon />,
+    icon: <FileText className="h-10 w-10" strokeWidth={1.8} />,
   },
   {
     title: "Student Login",
     description:
       "Sign in to track weekly progress and submit monthly industry reports.",
     href: "/student-login",
-    icon: <MonitorUserIcon />,
+    icon: <MonitorSmartphone className="h-10 w-10" strokeWidth={1.8} />,
   },
   {
     title: "Coordinator Portal",
     description:
       "Secure admin access to manage submissions and review student document progress.",
     href: "/login",
-    icon: <ShieldIcon />,
+    icon: <Shield className="h-10 w-10" strokeWidth={1.8} />,
   },
 ] as const;
 
@@ -103,7 +112,7 @@ export default function Home() {
               className="flex items-center gap-3 text-lg font-semibold tracking-tight text-white"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-indigo-200 shadow-lg shadow-indigo-950/40">
-                <CapIcon />
+                <GraduationCap className="h-6 w-6" strokeWidth={1.8} />
               </span>
               <span>
                 Course<span className="text-indigo-400">Module</span>
@@ -263,7 +272,7 @@ export default function Home() {
               <div>
                 <div className="flex items-center gap-3 text-lg font-semibold tracking-tight text-white">
                   <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-indigo-200 shadow-lg shadow-indigo-950/40">
-                    <CapIcon />
+                    <GraduationCap className="h-6 w-6" strokeWidth={1.8} />
                   </span>
                   <span>
                     Course<span className="text-indigo-400">Module</span>
@@ -330,146 +339,5 @@ export default function Home() {
         </footer>
       </div>
     </main>
-  );
-}
-
-function CapIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-6 w-6"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M3 9.5 12 5l9 4.5-9 4.5-9-4.5Z" />
-      <path d="M7 11.5v4.25C7 17.55 9.24 19 12 19s5-1.45 5-3.25V11.5" />
-      <path d="M21 10v5" />
-    </svg>
-  );
-}
-
-function TargetIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-8 w-8"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="8" />
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2" />
-      <path d="M12 20v2" />
-      <path d="M2 12h2" />
-      <path d="M20 12h2" />
-    </svg>
-  );
-}
-
-function CheckBadgeIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-8 w-8"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 3 5 6v6c0 5 3.5 7.5 7 9 3.5-1.5 7-4 7-9V6l-7-3Z" />
-      <path d="m9.5 12 1.75 1.75L15 10" />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-8 w-8"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="5" width="18" height="16" rx="2" />
-      <path d="M16 3v4" />
-      <path d="M8 3v4" />
-      <path d="M3 10h18" />
-      <path d="M8 14h3" />
-      <path d="M13 14h3" />
-    </svg>
-  );
-}
-
-function DocumentIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-10 w-10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
-      <path d="M14 3v5h5" />
-      <path d="M9 13h6" />
-      <path d="M9 17h6" />
-    </svg>
-  );
-}
-
-function MonitorUserIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-10 w-10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="4" width="18" height="12" rx="2" />
-      <path d="M8 20h8" />
-      <path d="M12 16v4" />
-      <circle cx="12" cy="10" r="2.2" />
-      <path d="M8.75 14a3.8 3.8 0 0 1 6.5 0" />
-    </svg>
-  );
-}
-
-function ShieldIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-10 w-10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 3 5 6v6c0 5 3.5 7.5 7 9 3.5-1.5 7-4 7-9V6l-7-3Z" />
-      <path d="M12 8v8" />
-      <path d="M9 11.5h6" />
-    </svg>
   );
 }

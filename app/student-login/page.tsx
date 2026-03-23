@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { MonitorCheck } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -50,7 +51,7 @@ export default function StudentLoginPage() {
       <div className="home-rise relative z-10 w-full max-w-[28rem] rounded-[1.75rem] border border-white/10 bg-white/[0.04] px-6 py-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:px-10 sm:py-12">
         <div className="text-center">
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-[1.5rem] border border-white/10 bg-gradient-to-br from-indigo-500/20 to-violet-500/20 text-indigo-200 shadow-lg shadow-indigo-950/40">
-            <StudentMonitorIcon />
+            <MonitorCheck className="h-9 w-9" strokeWidth={1.8} />
           </div>
           <h1 className="mt-6 text-3xl font-bold tracking-tight text-white">
             Student Access
@@ -130,26 +131,5 @@ export default function StudentLoginPage() {
         </div>
       </div>
     </main>
-  );
-}
-
-function StudentMonitorIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="h-9 w-9"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <rect x="3" y="4" width="18" height="11" rx="2" />
-      <path d="M8 20h8" />
-      <path d="M12 15v5" />
-      <circle cx="12" cy="9" r="2.1" />
-      <path d="M8.8 13a3.7 3.7 0 0 1 6.4 0" />
-    </svg>
   );
 }

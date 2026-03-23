@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { FileText } from "lucide-react";
 import Link from "next/link";
 import { SubmitCvForm } from "./submit-cv-form";
 
@@ -57,7 +58,7 @@ export default function SubmitCvPage() {
               className="flex items-center gap-3 text-lg font-semibold tracking-tight text-white"
             >
               <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-indigo-200 shadow-lg shadow-indigo-950/40">
-                <DocumentIcon className="h-6 w-6" />
+                <FileText className="h-6 w-6" strokeWidth={1.8} />
               </span>
               <span>
                 CV<span className="text-indigo-400">Portal</span>
@@ -100,25 +101,5 @@ export default function SubmitCvPage() {
         </footer>
       </div>
     </main>
-  );
-}
-
-function DocumentIcon({ className }: { className: string }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z" />
-      <path d="M14 3v5h5" />
-      <path d="M9 13h6" />
-      <path d="M9 17h6" />
-    </svg>
   );
 }
