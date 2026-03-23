@@ -4,7 +4,6 @@ import {
   Download,
   ExternalLink,
   FileText,
-  Home,
   LogOut,
   Pencil,
   Search,
@@ -307,20 +306,14 @@ export function DashboardClient() {
                 <Shield className="h-3.5 w-3.5" strokeWidth={2} />
                 Admin
               </span>
-              <Link href="/" className={navButtonClassName}>
-                <Home className="h-4 w-4" strokeWidth={1.8} />
+              <Link href="/admin-hub" className={navButtonClassName}>
+                <FileText className="h-4 w-4" strokeWidth={1.8} />
                 Hub
               </Link>
-              <button
-                type="button"
-                className={navButtonClassName}
-                onClick={() =>
-                  addToast("Settings UI is not connected yet.", "info")
-                }
-              >
+              <Link href="/admin-setting" className={navButtonClassName}>
                 <Settings className="h-4 w-4" strokeWidth={1.8} />
                 Settings
-              </button>
+              </Link>
               <Link href="/login" className={navButtonClassName}>
                 <LogOut className="h-4 w-4" strokeWidth={1.8} />
                 Logout
