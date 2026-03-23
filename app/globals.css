@@ -29,7 +29,14 @@ html {
   scroll-behavior: smooth;
 }
 
-@keyframes home-float {
+@keyframes home-rise {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bg-particle-float {
   0%,
   100% {
     transform: translateY(0) scale(1);
@@ -44,15 +51,68 @@ html {
   }
 }
 
-@keyframes home-rise {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.bg-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
 }
 
-.home-float {
-  animation: home-float 20s ease-in-out infinite;
+.bg-particles span {
+  position: absolute;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  opacity: 0.06;
+  animation: bg-particle-float 20s ease-in-out infinite;
+}
+
+.bg-particles span:nth-child(1) {
+  width: 400px;
+  height: 400px;
+  top: -10%;
+  left: -5%;
+  animation-delay: 0s;
+}
+
+.bg-particles span:nth-child(2) {
+  width: 300px;
+  height: 300px;
+  top: 50%;
+  right: -8%;
+  animation-delay: -5s;
+}
+
+.bg-particles span:nth-child(3) {
+  width: 250px;
+  height: 250px;
+  bottom: -5%;
+  left: 30%;
+  animation-delay: -10s;
+}
+
+.bg-particles span:nth-child(4) {
+  width: 200px;
+  height: 200px;
+  top: 20%;
+  left: 60%;
+  animation-delay: -3s;
+}
+
+.bg-particles span:nth-child(5) {
+  width: 350px;
+  height: 350px;
+  right: 20%;
+  bottom: 20%;
+  animation-delay: -7s;
+}
+
+.bg-particles span:nth-child(6) {
+  width: 180px;
+  height: 180px;
+  top: 70%;
+  left: 10%;
+  animation-delay: -12s;
 }
 
 .home-rise {

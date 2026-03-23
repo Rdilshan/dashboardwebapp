@@ -2,33 +2,7 @@
 
 import { BarChart3, Home, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-
-const particles = [
-  {
-    className: "left-[-5%] top-[-10%] h-[25rem] w-[25rem] bg-indigo-500/10",
-    delay: "0s",
-  },
-  {
-    className: "right-[-8%] top-[50%] h-[19rem] w-[19rem] bg-violet-500/10",
-    delay: "-5s",
-  },
-  {
-    className: "bottom-[-5%] left-[30%] h-[16rem] w-[16rem] bg-indigo-400/10",
-    delay: "-10s",
-  },
-  {
-    className: "left-[60%] top-[20%] h-[13rem] w-[13rem] bg-fuchsia-500/8",
-    delay: "-3s",
-  },
-  {
-    className: "bottom-[20%] right-[20%] h-[22rem] w-[22rem] bg-violet-400/8",
-    delay: "-7s",
-  },
-  {
-    className: "left-[10%] top-[70%] h-[11rem] w-[11rem] bg-indigo-300/10",
-    delay: "-12s",
-  },
-] as const;
+import { BackgroundParticles } from "../ui/background-particles";
 
 const hubCardClassName =
   "group rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl transition duration-300 hover:-translate-y-2 hover:border-indigo-400/45 hover:shadow-[0_0_24px_rgba(99,102,241,0.22)]";
@@ -36,16 +10,7 @@ const hubCardClassName =
 export function AdminHubClient() {
   return (
     <main className="relative isolate flex min-h-screen flex-1 items-center justify-center overflow-hidden bg-[#0a0e1a] px-6 py-10 text-slate-50">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(139,92,246,0.16),_transparent_28%),linear-gradient(180deg,_rgba(10,14,26,0.96)_0%,_rgba(10,14,26,1)_100%)]" />
-        {particles.map((particle) => (
-          <span
-            key={particle.className}
-            className={`home-float absolute rounded-full blur-3xl ${particle.className}`}
-            style={{ animationDelay: particle.delay }}
-          />
-        ))}
-      </div>
+      <BackgroundParticles />
 
       <div className="relative z-10 flex w-full max-w-5xl flex-col items-center">
         <div className="home-rise text-center">
