@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { BackgroundParticles } from "../ui/background-particles";
 
 type Role =
   | "Software Engineer"
@@ -40,33 +41,6 @@ type Submission = {
   cvFilename: string;
   submittedAt: string;
 };
-
-const particles = [
-  {
-    className: "left-[-5%] top-[-10%] h-[25rem] w-[25rem] bg-indigo-500/10",
-    delay: "0s",
-  },
-  {
-    className: "right-[-8%] top-[50%] h-[19rem] w-[19rem] bg-violet-500/10",
-    delay: "-5s",
-  },
-  {
-    className: "bottom-[-5%] left-[30%] h-[16rem] w-[16rem] bg-indigo-400/10",
-    delay: "-10s",
-  },
-  {
-    className: "left-[60%] top-[20%] h-[13rem] w-[13rem] bg-fuchsia-500/8",
-    delay: "-3s",
-  },
-  {
-    className: "bottom-[20%] right-[20%] h-[22rem] w-[22rem] bg-violet-400/8",
-    delay: "-7s",
-  },
-  {
-    className: "left-[10%] top-[70%] h-[11rem] w-[11rem] bg-indigo-300/10",
-    delay: "-12s",
-  },
-] as const;
 
 const roles: Role[] = [
   "Software Engineer",
@@ -275,16 +249,7 @@ export function DashboardClient() {
 
   return (
     <main className="relative isolate flex min-h-screen flex-1 flex-col overflow-hidden bg-[#0a0e1a] text-slate-50">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(139,92,246,0.16),_transparent_28%),linear-gradient(180deg,_rgba(10,14,26,0.96)_0%,_rgba(10,14,26,1)_100%)]" />
-        {particles.map((particle) => (
-          <span
-            key={particle.className}
-            className={`home-float absolute rounded-full blur-3xl ${particle.className}`}
-            style={{ animationDelay: particle.delay }}
-          />
-        ))}
-      </div>
+      <BackgroundParticles />
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <header className="sticky top-0 z-20 border-b border-white/10 bg-[#0a0e1a]/80 backdrop-blur-xl">

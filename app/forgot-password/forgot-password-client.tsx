@@ -3,38 +3,12 @@
 import { KeyRound, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { BackgroundParticles } from "../ui/background-particles";
 
 type Toast = {
   message: string;
   type: "success" | "error" | "info";
 };
-
-const particles = [
-  {
-    className: "left-[-5%] top-[-10%] h-[25rem] w-[25rem] bg-indigo-500/10",
-    delay: "0s",
-  },
-  {
-    className: "right-[-8%] top-[50%] h-[19rem] w-[19rem] bg-violet-500/10",
-    delay: "-5s",
-  },
-  {
-    className: "bottom-[-5%] left-[30%] h-[16rem] w-[16rem] bg-indigo-400/10",
-    delay: "-10s",
-  },
-  {
-    className: "left-[60%] top-[20%] h-[13rem] w-[13rem] bg-fuchsia-500/8",
-    delay: "-3s",
-  },
-  {
-    className: "bottom-[20%] right-[20%] h-[22rem] w-[22rem] bg-violet-400/8",
-    delay: "-7s",
-  },
-  {
-    className: "left-[10%] top-[70%] h-[11rem] w-[11rem] bg-indigo-300/10",
-    delay: "-12s",
-  },
-] as const;
 
 const inputClassName =
   "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15";
@@ -91,16 +65,7 @@ export function ForgotPasswordClient() {
 
   return (
     <main className="relative isolate flex min-h-screen flex-1 items-center justify-center overflow-hidden bg-[#0a0e1a] px-6 py-8 text-slate-50">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.18),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(139,92,246,0.16),_transparent_28%),linear-gradient(180deg,_rgba(10,14,26,0.96)_0%,_rgba(10,14,26,1)_100%)]" />
-        {particles.map((particle) => (
-          <span
-            key={particle.className}
-            className={`home-float absolute rounded-full blur-3xl ${particle.className}`}
-            style={{ animationDelay: particle.delay }}
-          />
-        ))}
-      </div>
+      <BackgroundParticles />
 
       <div className="home-rise relative z-10 w-full max-w-[26rem] rounded-[1.75rem] border border-white/10 bg-white/[0.04] px-6 py-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:px-10 sm:py-12">
         <div className="text-center">
