@@ -19,6 +19,10 @@ const getRedirectPathForRole = (role?: string) => {
   return "/student-login";
 };
 
+const studentDocumentBucketName =
+  process.env.SUPABASE_STUDENT_DOCUMENTS_BUCKET?.trim() ||
+  "student-documents";
+
 const asSubmissionMetadata = (value: unknown): Record<string, unknown> | null => {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return null;
@@ -26,6 +30,8 @@ const asSubmissionMetadata = (value: unknown): Record<string, unknown> | null =>
 
   return value as Record<string, unknown>;
 };
+
+const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value);
 
 export default async function StudentDashboardPage() {
   const session = await auth();
@@ -95,25 +101,44 @@ export default async function StudentDashboardPage() {
       formType.name.toLowerCase().includes("presentation");
 
     let fileName: string | null = null;
+    let fileUrl: string | null = null;
     let videoLink: string | null = null;
 
     if (formLocation) {
       if (isVideo) {
         videoLink = formLocation;
       } else {
+        const storedStoragePath =
+          typeof submissionData?.storagePath === "string"
+            ? submissionData.storagePath
+            : formLocation;
+        const storedStorageBucket =
+          typeof submissionData?.storageBucket === "string"
+            ? submissionData.storageBucket
+            : studentDocumentBucketName;
         const storedFileName =
           typeof submissionData?.fileName === "string"
             ? submissionData.fileName
             : null;
 
+        if (isAbsoluteUrl(formLocation)) {
+          fileUrl = formLocation;
+        } else if (storedStoragePath) {
+          const { data: publicUrlData } = supabase.storage
+            .from(storedStorageBucket)
+            .getPublicUrl(storedStoragePath);
+
+          fileUrl = publicUrlData.publicUrl;
+        }
+
         if (storedFileName) {
           fileName = storedFileName;
         } else {
           try {
-            const pathname = new URL(formLocation).pathname;
+            const pathname = new URL(fileUrl ?? formLocation).pathname;
             fileName = decodeURIComponent(pathname.split("/").pop() ?? "");
           } catch {
-            fileName = formLocation.split("/").pop() ?? formLocation;
+            fileName = storedStoragePath.split("/").pop() ?? storedStoragePath;
           }
         }
       }
@@ -124,6 +149,7 @@ export default async function StudentDashboardPage() {
       reportName: formType.name,
       isUploaded: Boolean(formLocation),
       fileName,
+      fileUrl,
       videoLink,
     };
   });

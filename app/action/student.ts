@@ -47,6 +47,7 @@ export type StudentDashboardFormFieldErrors = Partial<
 
 export type StudentDashboardFormSubmission = {
   reportTypeId: number;
+  isUploaded: boolean;
   fileName: string | null;
   videoLink: string | null;
 };
@@ -153,6 +154,8 @@ const asRecord = (value: unknown): Record<string, unknown> | null => {
 
   return value as Record<string, unknown>;
 };
+
+const isAbsoluteUrl = (value: string) => /^https?:\/\//i.test(value);
 
 const removeUploadedObject = async (bucketName: string, filePath: string) => {
   try {
@@ -599,6 +602,7 @@ export async function submitStudentDashboardFormAction(
       submissionKind: "video",
       submission: {
         reportTypeId: formType.id,
+        isUploaded: true,
         fileName: null,
         videoLink: normalizedVideoLink,
       },
@@ -667,16 +671,23 @@ export async function submitStudentDashboardFormAction(
   const previousStoragePath =
     typeof existingSubmissionData?.storagePath === "string"
       ? existingSubmissionData.storagePath
+      : typeof existingSubmission?.url === "string" &&
+          existingSubmission.url &&
+          !isAbsoluteUrl(existingSubmission.url)
+        ? existingSubmission.url
       : null;
   const previousStorageBucket =
     typeof existingSubmissionData?.storageBucket === "string"
       ? existingSubmissionData.storageBucket
       : studentDocumentBucketName;
+  const { data: publicUrlData } = supabase.storage
+    .from(studentDocumentBucketName)
+    .getPublicUrl(filePath);
 
   const submissionPayload = {
     studentid: student.id,
     formtypeid: formType.id,
-    url: filePath,
+    url: publicUrlData.publicUrl,
     data: {
       submissionKind: "file",
       storageBucket: studentDocumentBucketName,
@@ -719,7 +730,145 @@ export async function submitStudentDashboardFormAction(
     submissionKind: "file",
     submission: {
       reportTypeId: formType.id,
+      isUploaded: true,
       fileName: documentFile.name,
+      videoLink: null,
+    },
+  });
+}
+
+export async function removeStudentDashboardFormAction(
+  reportTypeId: number,
+): Promise<StudentDashboardFormActionState> {
+  if (!Number.isInteger(reportTypeId) || reportTypeId < 1) {
+    return createStudentDashboardFormState({
+      error: "Please choose a valid form type.",
+    });
+  }
+
+  const session = await auth();
+  const user = session?.user;
+
+  if (!user || user.role !== "student") {
+    return createStudentDashboardFormState({
+      error: "Unauthorized. Please sign in again.",
+      reportTypeId,
+    });
+  }
+
+  const student = await getStudentById(user.id);
+
+  if (!student) {
+    return createStudentDashboardFormState({
+      error: "Student account was not found.",
+      reportTypeId,
+    });
+  }
+
+  const supabase = await supabaseClient();
+  const { data: formType, error: formTypeError } = await supabase
+    .from("formtype")
+    .select("id, name")
+    .eq("id", reportTypeId)
+    .limit(1)
+    .maybeSingle();
+
+  if (formTypeError) {
+    return createStudentDashboardFormState({
+      error: `Failed to validate form type: ${formTypeError.message}`,
+      reportTypeId,
+    });
+  }
+
+  if (!formType) {
+    return createStudentDashboardFormState({
+      error: "The selected form type does not exist.",
+      reportTypeId,
+    });
+  }
+
+  const { data: existingSubmission, error: existingSubmissionError } =
+    await supabase
+      .from("form")
+      .select("id, url, data")
+      .eq("studentid", student.id)
+      .eq("formtypeid", formType.id)
+      .order("id", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+  if (existingSubmissionError) {
+    return createStudentDashboardFormState({
+      error: `Failed to load the current submission: ${existingSubmissionError.message}`,
+      reportTypeId: formType.id,
+    });
+  }
+
+  const submissionData = asRecord(existingSubmission?.data);
+  const submissionKind =
+    typeof submissionData?.submissionKind === "string" &&
+    submissionData.submissionKind === "video"
+      ? "video"
+      : formType.name.toLowerCase().includes("presentation")
+        ? "video"
+        : "file";
+
+  if (!existingSubmission) {
+    return createStudentDashboardFormState({
+      success: true,
+      error: null,
+      reportTypeId: formType.id,
+      submissionKind,
+      submission: {
+        reportTypeId: formType.id,
+        isUploaded: false,
+        fileName: null,
+        videoLink: null,
+      },
+    });
+  }
+
+  const previousStoragePath =
+    typeof submissionData?.storagePath === "string"
+      ? submissionData.storagePath
+      : typeof existingSubmission.url === "string" &&
+          existingSubmission.url &&
+          !isAbsoluteUrl(existingSubmission.url)
+        ? existingSubmission.url
+        : null;
+  const previousStorageBucket =
+    typeof submissionData?.storageBucket === "string"
+      ? submissionData.storageBucket
+      : studentDocumentBucketName;
+
+  const { error: deleteError } = await supabase
+    .from("form")
+    .delete()
+    .eq("id", existingSubmission.id);
+
+  if (deleteError) {
+    return createStudentDashboardFormState({
+      error: `Failed to remove ${formType.name}: ${deleteError.message}`,
+      reportTypeId: formType.id,
+      submissionKind,
+    });
+  }
+
+  if (submissionKind === "file" && previousStoragePath) {
+    await removeUploadedObject(previousStorageBucket, previousStoragePath);
+  }
+
+  revalidatePath("/student-dashboard");
+
+  return createStudentDashboardFormState({
+    success: true,
+    error: null,
+    reportTypeId: formType.id,
+    submissionKind,
+    submission: {
+      reportTypeId: formType.id,
+      isUploaded: false,
+      fileName: null,
       videoLink: null,
     },
   });

@@ -7,12 +7,14 @@ import {
   Link2,
   LoaderCircle,
   PlayCircle,
+  Trash2,
   Upload,
   XCircle,
 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useRef, useState } from "react";
 import {
+  removeStudentDashboardFormAction,
   submitStudentDashboardFormAction,
   type StudentDashboardFormActionState,
 } from "../action/student";
@@ -34,6 +36,7 @@ type DocumentItem = {
   reportName: string;
   isUploaded: boolean;
   fileName: string | null;
+  fileUrl: string | null;
   videoLink: string | null;
 };
 
@@ -42,12 +45,15 @@ type StudentDashboardClientProps = {
   initialDocuments: DocumentItem[];
 };
 
+type PendingActionKind = "submit-file" | "submit-video" | "remove";
+
 type DocumentCardProps = {
   actionState: StudentDashboardFormActionState;
   document: DocumentItem;
   fileInputKey: number;
-  isPending: boolean;
+  pendingActionKind: PendingActionKind | null;
   onFileChange: (reportTypeId: number, fileName: string) => void;
+  onRemove: (document: DocumentItem) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>, document: DocumentItem) => void;
   onVideoDraftChange: (reportTypeId: number, value: string) => void;
   selectedFileName: string;
@@ -104,6 +110,29 @@ function DocumentSubmitButton({
   );
 }
 
+function DocumentRemoveButton({ isPending, onClick }: { isPending: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      disabled={isPending}
+      onClick={onClick}
+      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rose-400/35 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/15 disabled:opacity-70"
+    >
+      {isPending ? (
+        <>
+          <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={1.8} />
+          Removing...
+        </>
+      ) : (
+        <>
+          <Trash2 className="h-4 w-4" strokeWidth={1.8} />
+          Remove Submission
+        </>
+      )}
+    </button>
+  );
+}
+
 function fieldClassName(error?: string) {
   return `${inputClassName} ${
     error
@@ -124,8 +153,9 @@ function DocumentCard({
   actionState,
   document,
   fileInputKey,
-  isPending,
+  pendingActionKind,
   onFileChange,
+  onRemove,
   onSubmit,
   onVideoDraftChange,
   selectedFileName,
@@ -138,6 +168,9 @@ function DocumentCard({
       : undefined;
   const cardError =
     actionState.reportTypeId === document.reportTypeId ? actionState.error : null;
+  const isRemoving = pendingActionKind === "remove";
+  const isSubmitting =
+    pendingActionKind === "submit-file" || pendingActionKind === "submit-video";
 
   return (
     <article className="flex h-full flex-col justify-between rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl transition hover:-translate-y-1.5 hover:border-indigo-400/35">
@@ -160,10 +193,22 @@ function DocumentCard({
         <h3 className="mt-4 text-xl font-bold text-white">{document.reportName}</h3>
 
         {document.fileName ? (
-          <p className="mt-3 inline-flex max-w-full items-center gap-2 text-sm text-slate-400">
-            <FileText className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-            <span className="truncate">{document.fileName}</span>
-          </p>
+          document.fileUrl ? (
+            <a
+              href={document.fileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-3 inline-flex max-w-full items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
+            >
+              <FileText className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+              <span className="truncate">{document.fileName}</span>
+            </a>
+          ) : (
+            <p className="mt-3 inline-flex max-w-full items-center gap-2 text-sm text-slate-400">
+              <FileText className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+              <span className="truncate">{document.fileName}</span>
+            </p>
+          )
         ) : null}
 
         {document.videoLink ? (
@@ -187,7 +232,24 @@ function DocumentCard({
       >
         <input type="hidden" name="report_type_id" value={document.reportTypeId} />
 
-        {isVideo ? (
+        {document.isUploaded ? (
+          <>
+            <p className="text-sm text-slate-400">
+              {isVideo
+                ? "Your presentation link is already submitted. Remove it if you want to add a new one."
+                : "Your file is already uploaded. Remove it if you want to upload a new one."}
+            </p>
+            {cardError ? (
+              <p className="mt-3 rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+                {cardError}
+              </p>
+            ) : null}
+            <DocumentRemoveButton
+              isPending={isRemoving}
+              onClick={() => onRemove(document)}
+            />
+          </>
+        ) : isVideo ? (
           <>
             <input
               type="url"
@@ -210,7 +272,7 @@ function DocumentCard({
             <DocumentSubmitButton
               kind="video"
               isUploaded={document.isUploaded}
-              isPending={isPending}
+              isPending={isSubmitting}
             />
           </>
         ) : (
@@ -231,9 +293,7 @@ function DocumentCard({
             <p className="mt-2 min-h-5 text-xs text-slate-500">
               {selectedFileName
                 ? `Selected: ${selectedFileName}`
-                : document.fileName
-                  ? `Current: ${document.fileName}`
-                  : "Accepted formats: .pdf, .doc, .docx"}
+                : "Accepted formats: .pdf, .doc, .docx"}
             </p>
             <p className="min-h-5 text-xs text-red-400">
               {cardFieldErrors?.documentFile ?? ""}
@@ -246,7 +306,7 @@ function DocumentCard({
             <DocumentSubmitButton
               kind="file"
               isUploaded={document.isUploaded}
-              isPending={isPending}
+              isPending={isSubmitting}
             />
           </>
         )}
@@ -274,7 +334,7 @@ export function StudentDashboardClient({
   const [fileInputKeys, setFileInputKeys] = useState<Record<number, number>>({});
   const [pendingAction, setPendingAction] = useState<{
     id: number;
-    kind: "file" | "video";
+    kind: PendingActionKind;
   } | null>(null);
   const [actionState, setActionState] = useState<StudentDashboardFormActionState>(
     initialDocumentActionState,
@@ -299,11 +359,13 @@ export function StudentDashboardClient({
   ) {
     event.preventDefault();
 
-    const submissionKind = document.reportName.toLowerCase().includes("presentation")
-      ? "video"
-      : "file";
+    const pendingKind: PendingActionKind = document.reportName
+      .toLowerCase()
+      .includes("presentation")
+      ? "submit-video"
+      : "submit-file";
 
-    setPendingAction({ id: document.reportTypeId, kind: submissionKind });
+    setPendingAction({ id: document.reportTypeId, kind: pendingKind });
 
     try {
       const formData = new FormData(event.currentTarget);
@@ -315,15 +377,19 @@ export function StudentDashboardClient({
       setActionState(result);
 
       if (result.success && result.submission) {
-        const { reportTypeId, fileName, videoLink } = result.submission;
+        const { reportTypeId, isUploaded, fileName, videoLink } = result.submission;
 
         setDocuments((current) =>
           current.map((currentDocument) =>
             currentDocument.reportTypeId === reportTypeId
               ? {
                   ...currentDocument,
-                  isUploaded: true,
+                  isUploaded,
                   fileName,
+                  fileUrl:
+                    currentDocument.fileUrl && fileName === currentDocument.fileName
+                      ? currentDocument.fileUrl
+                      : currentDocument.fileUrl,
                   videoLink,
                 }
               : currentDocument,
@@ -362,7 +428,71 @@ export function StudentDashboardClient({
         error: message,
         responseId: `${Date.now()}`,
         reportTypeId: document.reportTypeId,
-        submissionKind,
+        submissionKind: pendingKind === "submit-video" ? "video" : "file",
+        submission: null,
+      };
+
+      setActionState(failedState);
+      showToast(message, "error");
+    } finally {
+      setPendingAction(null);
+    }
+  }
+
+  async function handleDocumentRemove(document: DocumentItem) {
+    setPendingAction({ id: document.reportTypeId, kind: "remove" });
+
+    try {
+      const result = await removeStudentDashboardFormAction(document.reportTypeId);
+
+      setActionState(result);
+
+      if (result.success && result.submission) {
+        const { reportTypeId, isUploaded, fileName, videoLink } = result.submission;
+
+        setDocuments((current) =>
+          current.map((currentDocument) =>
+            currentDocument.reportTypeId === reportTypeId
+              ? {
+                  ...currentDocument,
+                  isUploaded,
+                  fileName,
+                  fileUrl: null,
+                  videoLink,
+                }
+              : currentDocument,
+          ),
+        );
+        setSelectedFileNames((current) => ({
+          ...current,
+          [reportTypeId]: "",
+        }));
+        setVideoDrafts((current) => ({
+          ...current,
+          [reportTypeId]: "",
+        }));
+        setFileInputKeys((current) => ({
+          ...current,
+          [reportTypeId]: (current[reportTypeId] ?? 0) + 1,
+        }));
+        showToast("Submission removed successfully.", "success");
+        return;
+      }
+
+      if (result.error) {
+        showToast(result.error, "error");
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Remove failed. Please try again.";
+      const failedState: StudentDashboardFormActionState = {
+        success: false,
+        error: message,
+        responseId: `${Date.now()}`,
+        reportTypeId: document.reportTypeId,
+        submissionKind: document.reportName.toLowerCase().includes("presentation")
+          ? "video"
+          : "file",
         submission: null,
       };
 
@@ -429,7 +559,8 @@ export function StudentDashboardClient({
         <section className="home-rise mt-8">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {documents.map((document) => {
-              const isPending = pendingAction?.id === document.reportTypeId;
+              const pendingActionKind =
+                pendingAction?.id === document.reportTypeId ? pendingAction.kind : null;
 
               return (
                 <DocumentCard
@@ -437,12 +568,15 @@ export function StudentDashboardClient({
                   actionState={actionState}
                   document={document}
                   fileInputKey={fileInputKeys[document.reportTypeId] ?? 0}
-                  isPending={isPending}
+                  pendingActionKind={pendingActionKind}
                   onFileChange={(reportTypeId, fileName) =>
                     setSelectedFileNames((current) => ({
                       ...current,
                       [reportTypeId]: fileName,
                     }))
+                  }
+                  onRemove={(currentDocument) =>
+                    void handleDocumentRemove(currentDocument)
                   }
                   onSubmit={(event, currentDocument) =>
                     void handleDocumentSubmit(event, currentDocument)
