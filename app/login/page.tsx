@@ -2,13 +2,18 @@ import type { Metadata } from "next";
 import { LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { BackgroundParticles } from "../ui/background-particles";
+import { getAllAdmins } from "../action/admin";
 
 export const metadata: Metadata = {
   title: "Admin Login | Industrial Training Portal",
   description: "Secure coordinator access for the industrial training portal.",
 };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+
+  const data = await getAllAdmins();
+
+  console.log(data)
   return (
     <main className="relative isolate flex min-h-screen flex-1 items-center justify-center overflow-hidden bg-[#0a0e1a] px-6 py-8 text-slate-50">
       <BackgroundParticles />
