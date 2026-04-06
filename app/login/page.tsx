@@ -2,18 +2,14 @@ import type { Metadata } from "next";
 import { LockKeyhole } from "lucide-react";
 import Link from "next/link";
 import { BackgroundParticles } from "../ui/background-particles";
-import { getAllAdmins } from "../action/admin";
+import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
   title: "Admin Login | Industrial Training Portal",
   description: "Secure coordinator access for the industrial training portal.",
 };
 
-export default async function LoginPage() {
-
-  const data = await getAllAdmins();
-
-  console.log(data)
+export default function LoginPage() {
   return (
     <main className="relative isolate flex min-h-screen flex-1 items-center justify-center overflow-hidden bg-[#0a0e1a] px-6 py-8 text-slate-50">
       <BackgroundParticles />
@@ -31,48 +27,7 @@ export default async function LoginPage() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-5" noValidate>
-          <div className="space-y-2">
-            <label
-              htmlFor="username"
-              className="text-sm font-medium text-slate-300"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              autoComplete="username"
-              required
-              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-slate-300"
-            >
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15"
-            />
-          </div>
-
-          <button
-            type="button"
-            className="inline-flex w-full items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-3.5 text-base font-semibold text-white shadow-[0_0_24px_rgba(99,102,241,0.32)] transition hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(99,102,241,0.4)]"
-          >
-            Sign In
-          </button>
-        </form>
+        <LoginForm />
 
         <div className="mt-6 text-center">
           <Link
