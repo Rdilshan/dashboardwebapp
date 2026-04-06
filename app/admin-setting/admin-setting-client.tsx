@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { changeAdminPasswordAction } from "../action/admin-setting";
 import { BackgroundParticles } from "../ui/background-particles";
 import { AdminLogoutButton } from "../ui/admin-logout-button";
 
@@ -77,7 +78,18 @@ export function AdminSettingClient() {
     setIsSubmitting(true);
 
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 900));
+      const result = await changeAdminPasswordAction({
+        currentPassword,
+        newPassword,
+        confirmPassword,
+      });
+
+      if (!result.success) {
+        setErrors(result.fieldErrors ?? {});
+        showToast(result.error ?? "Failed to update the password.", "error");
+        return;
+      }
+
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
@@ -311,6 +323,3 @@ function FormField({
     </div>
   );
 }
-
-
-
