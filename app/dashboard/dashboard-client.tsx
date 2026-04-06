@@ -16,16 +16,7 @@ import { useRef, useState } from "react";
 import { BackgroundParticles } from "../ui/background-particles";
 import { AdminLogoutButton } from "../ui/admin-logout-button";
 
-type Role =
-  | "Software Engineer"
-  | "QA Engineer"
-  | "Business Analyst"
-  | "UI/UX Designer"
-  | "Network Engineer"
-  | "Data Scientist"
-  | "Other";
-
-type FilterRole = "All" | Role;
+type FilterRole = "All" | string;
 type ToastType = "success" | "error" | "info";
 type Toast = { id: number; message: string; type: ToastType };
 
@@ -33,111 +24,20 @@ type Submission = {
   id: number;
   fullName: string;
   indexNumber: string;
-  preferredRole: Role;
+  preferredRole: string;
   email: string;
   contactNumber: string;
   linkedinUrl: string;
   githubUrl: string;
   cvFilename: string;
-  submittedAt: string;
+  cvUrl: string;
+  submittedAt: string | null;
 };
 
-const roles: Role[] = [
-  "Software Engineer",
-  "QA Engineer",
-  "Business Analyst",
-  "UI/UX Designer",
-  "Network Engineer",
-  "Data Scientist",
-  "Other",
-];
-
-const initialSubmissions: Submission[] = [
-  {
-    id: 1,
-    fullName: "Ayesha Fernando",
-    indexNumber: "22CSE0001",
-    preferredRole: "Software Engineer",
-    email: "ayesha.fernando@example.com",
-    contactNumber: "+94 71 345 6721",
-    linkedinUrl: "https://linkedin.com/in/ayesha-fernando",
-    githubUrl: "https://github.com/ayeshaf",
-    cvFilename: "ayesha-fernando-cv.pdf",
-    submittedAt: "2026-10-18T08:45:00.000Z",
-  },
-  {
-    id: 2,
-    fullName: "Kavindu Perera",
-    indexNumber: "22CSE0007",
-    preferredRole: "QA Engineer",
-    email: "kavindu.perera@example.com",
-    contactNumber: "+94 77 881 1024",
-    linkedinUrl: "https://linkedin.com/in/kavindu-perera",
-    githubUrl: "",
-    cvFilename: "kavindu-perera-cv.pdf",
-    submittedAt: "2026-10-19T11:20:00.000Z",
-  },
-  {
-    id: 3,
-    fullName: "Nethmi Jayasuriya",
-    indexNumber: "22CSE0012",
-    preferredRole: "Business Analyst",
-    email: "nethmi.j@example.com",
-    contactNumber: "+94 75 210 4567",
-    linkedinUrl: "https://linkedin.com/in/nethmij",
-    githubUrl: "",
-    cvFilename: "nethmi-jayasuriya-cv.pdf",
-    submittedAt: "2026-10-19T14:12:00.000Z",
-  },
-  {
-    id: 4,
-    fullName: "Dineth Silva",
-    indexNumber: "22CSE0020",
-    preferredRole: "UI/UX Designer",
-    email: "dineth.silva@example.com",
-    contactNumber: "+94 70 998 2201",
-    linkedinUrl: "https://linkedin.com/in/dinethsilva",
-    githubUrl: "https://github.com/dineth-ui",
-    cvFilename: "dineth-silva-portfolio.pdf",
-    submittedAt: "2026-10-20T09:05:00.000Z",
-  },
-  {
-    id: 5,
-    fullName: "Isuru Wickramasinghe",
-    indexNumber: "22CSE0025",
-    preferredRole: "Network Engineer",
-    email: "isuru.w@example.com",
-    contactNumber: "+94 76 301 8181",
-    linkedinUrl: "",
-    githubUrl: "",
-    cvFilename: "isuru-wickramasinghe-cv.pdf",
-    submittedAt: "2026-10-20T10:55:00.000Z",
-  },
-  {
-    id: 6,
-    fullName: "Pasindu Hettiarachchi",
-    indexNumber: "22CSE0032",
-    preferredRole: "Data Scientist",
-    email: "pasindu.h@example.com",
-    contactNumber: "+94 78 445 9912",
-    linkedinUrl: "https://linkedin.com/in/pasindu-h",
-    githubUrl: "https://github.com/pasinduh",
-    cvFilename: "pasindu-hettiarachchi-cv.pdf",
-    submittedAt: "2026-10-21T07:30:00.000Z",
-  },
-  {
-    id: 7,
-    fullName: "Senuri De Alwis",
-    indexNumber: "22CSE0039",
-    preferredRole: "Other",
-    email: "senuri.d@example.com",
-    contactNumber: "+94 74 602 2144",
-    linkedinUrl: "https://linkedin.com/in/senuri-alwis",
-    githubUrl: "",
-    cvFilename: "senuri-de-alwis-cv.pdf",
-    submittedAt: "2026-10-21T12:10:00.000Z",
-  },
-];
+type DashboardClientProps = {
+  roles: string[];
+  initialSubmissions: Submission[];
+};
 
 const tableInputClassName =
   "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15";
@@ -154,10 +54,11 @@ const secondaryButtonClassName =
 const primaryButtonClassName =
   "inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_24px_rgba(99,102,241,0.32)] transition hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(99,102,241,0.4)]";
 
-export function DashboardClient() {
-  const [submissions, setSubmissions] = useState<Submission[]>([
-    ...initialSubmissions,
-  ]);
+export function DashboardClient({
+  roles,
+  initialSubmissions,
+}: DashboardClientProps) {
+  const [submissions, setSubmissions] = useState<Submission[]>(initialSubmissions);
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<FilterRole>("All");
   const [editingSubmission, setEditingSubmission] = useState<Submission | null>(
@@ -209,9 +110,9 @@ export function DashboardClient() {
     );
   }
 
-  function handleDownload(role: Role) {
+  function handleDownload(role: string) {
     setRoleFilter(role);
-    addToast(`Showing ${role} submissions. Download integration is not connected yet.`);
+    addToast(`Showing ${role} submissions. Bulk download is not connected yet.`);
   }
 
   function handleSaveChanges() {
@@ -232,7 +133,7 @@ export function DashboardClient() {
 
     setEditingSubmission(null);
     setReplacementCvName("");
-    addToast("Updated successfully.", "success");
+    addToast("Updated in the current view only. Database update is not connected yet.");
   }
 
   function handleDeleteConfirm() {
@@ -243,7 +144,9 @@ export function DashboardClient() {
     setSubmissions((current) =>
       current.filter((submission) => submission.id !== deleteTarget.id),
     );
-    addToast(`Deleted ${deleteTarget.fullName}.`, "success");
+    addToast(
+      `Removed ${deleteTarget.fullName} from the current view only. Database delete is not connected yet.`,
+    );
     setDeleteTarget(null);
   }
 
@@ -325,7 +228,7 @@ export function DashboardClient() {
                   onChange={(event) =>
                     setRoleFilter(event.target.value as FilterRole)
                   }
-                  className={`${tableInputClassName} md:w-60 text-slate-300`}
+                  className={`${tableInputClassName} text-slate-300 md:w-60`}
                 >
                   <option value="All" className="bg-slate-900">
                     All Roles
@@ -410,7 +313,7 @@ export function DashboardClient() {
                           </span>
                         </td>
                         <td className="px-4 py-4">{submission.email}</td>
-                        <td className="px-4 py-4">{submission.contactNumber}</td>
+                        <td className="px-4 py-4">{submission.contactNumber || "-"}</td>
                         <td className="px-4 py-4">
                           {submission.linkedinUrl ? (
                             <a
@@ -448,22 +351,23 @@ export function DashboardClient() {
                           )}
                         </td>
                         <td className="px-4 py-4">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              addToast(
-                                `Download for ${submission.cvFilename} is not connected yet.`,
-                              )
-                            }
-                            className="inline-flex items-center gap-2 text-indigo-300 transition hover:text-indigo-200"
-                          >
-                            <Download className="h-4 w-4" strokeWidth={1.8} />
-                            <span className="max-w-44 truncate">
-                              {submission.cvFilename}
-                            </span>
-                          </button>
+                          {submission.cvUrl ? (
+                            <a
+                              href={submission.cvUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2 text-indigo-300 transition hover:text-indigo-200"
+                            >
+                              <Download className="h-4 w-4" strokeWidth={1.8} />
+                              <span className="max-w-44 truncate">
+                                {submission.cvFilename}
+                              </span>
+                            </a>
+                          ) : (
+                            <span className="text-slate-500">-</span>
+                          )}
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap">
+                        <td className="whitespace-nowrap px-4 py-4">
                           {formatDate(submission.submittedAt)}
                         </td>
                         <td className="px-4 py-4">
@@ -574,7 +478,7 @@ export function DashboardClient() {
                       onChange={(event) =>
                         updateSubmissionField(
                           "preferredRole",
-                          event.target.value as Role,
+                          event.target.value,
                         )
                       }
                       className={`${tableInputClassName} text-slate-300`}
@@ -804,13 +708,20 @@ function FormControl({
   );
 }
 
-function formatDate(value: string) {
+function formatDate(value: string | null) {
+  if (!value) {
+    return "-";
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "-";
+  }
+
   return new Intl.DateTimeFormat("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }).format(new Date(value));
+  }).format(date);
 }
-
-
-
