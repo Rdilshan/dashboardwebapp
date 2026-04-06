@@ -10,7 +10,12 @@ import {
   Upload,
   XCircle,
 } from "lucide-react";
+import type { FormEvent } from "react";
 import { useRef, useState } from "react";
+import {
+  submitStudentDashboardFormAction,
+  type StudentDashboardFormActionState,
+} from "../action/student";
 import { BackgroundParticles } from "../ui/background-particles";
 import { StudentLogoutButton } from "../ui/student-logout-button";
 
@@ -37,8 +42,218 @@ type StudentDashboardClientProps = {
   initialDocuments: DocumentItem[];
 };
 
+type DocumentCardProps = {
+  actionState: StudentDashboardFormActionState;
+  document: DocumentItem;
+  fileInputKey: number;
+  isPending: boolean;
+  onFileChange: (reportTypeId: number, fileName: string) => void;
+  onSubmit: (event: FormEvent<HTMLFormElement>, document: DocumentItem) => void;
+  onVideoDraftChange: (reportTypeId: number, value: string) => void;
+  selectedFileName: string;
+  videoDraft: string;
+};
+
 const inputClassName =
   "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15";
+
+const fileInputClassName =
+  "w-full cursor-pointer rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-100 outline-none transition file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-500/15 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-200 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15";
+
+const initialDocumentActionState: StudentDashboardFormActionState = {
+  success: false,
+  error: null,
+  responseId: "",
+  reportTypeId: null,
+  submissionKind: null,
+  submission: null,
+};
+
+function DocumentSubmitButton({
+  kind,
+  isUploaded,
+  isPending,
+}: {
+  kind: "file" | "video";
+  isUploaded: boolean;
+  isPending: boolean;
+}) {
+  return (
+    <button
+      type="submit"
+      disabled={isPending}
+      className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.25)] transition hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-70"
+    >
+      {isPending ? (
+        <>
+          <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={1.8} />
+          {kind === "video" ? "Saving..." : "Uploading..."}
+        </>
+      ) : kind === "video" ? (
+        <>
+          <Link2 className="h-4 w-4" strokeWidth={1.8} />
+          {isUploaded ? "Update Link" : "Submit Link"}
+        </>
+      ) : (
+        <>
+          <Upload className="h-4 w-4" strokeWidth={1.8} />
+          {isUploaded ? "Replace File" : "Upload File"}
+        </>
+      )}
+    </button>
+  );
+}
+
+function fieldClassName(error?: string) {
+  return `${inputClassName} ${
+    error
+      ? "border-red-400/70 focus:border-red-400 focus:ring-red-500/15"
+      : ""
+  }`;
+}
+
+function documentFileFieldClassName(error?: string) {
+  return `${fileInputClassName} ${
+    error
+      ? "border-red-400/70 focus:border-red-400 focus:ring-red-500/15"
+      : ""
+  }`;
+}
+
+function DocumentCard({
+  actionState,
+  document,
+  fileInputKey,
+  isPending,
+  onFileChange,
+  onSubmit,
+  onVideoDraftChange,
+  selectedFileName,
+  videoDraft,
+}: DocumentCardProps) {
+  const isVideo = document.reportName.toLowerCase().includes("presentation");
+  const cardFieldErrors =
+    actionState.reportTypeId === document.reportTypeId
+      ? actionState.fieldErrors
+      : undefined;
+  const cardError =
+    actionState.reportTypeId === document.reportTypeId ? actionState.error : null;
+
+  return (
+    <article className="flex h-full flex-col justify-between rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl transition hover:-translate-y-1.5 hover:border-indigo-400/35">
+      <div>
+        <span
+          className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
+            document.isUploaded
+              ? "bg-emerald-500/15 text-emerald-300"
+              : "bg-red-500/15 text-red-300"
+          }`}
+        >
+          {document.isUploaded ? (
+            <CheckCircle2 className="h-4 w-4" strokeWidth={1.8} />
+          ) : (
+            <XCircle className="h-4 w-4" strokeWidth={1.8} />
+          )}
+          {document.isUploaded ? "Uploaded" : "Missing"}
+        </span>
+
+        <h3 className="mt-4 text-xl font-bold text-white">{document.reportName}</h3>
+
+        {document.fileName ? (
+          <p className="mt-3 inline-flex max-w-full items-center gap-2 text-sm text-slate-400">
+            <FileText className="h-4 w-4 shrink-0" strokeWidth={1.8} />
+            <span className="truncate">{document.fileName}</span>
+          </p>
+        ) : null}
+
+        {document.videoLink ? (
+          <a
+            href={document.videoLink}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
+          >
+            <PlayCircle className="h-4 w-4" strokeWidth={1.8} />
+            Watch Video
+          </a>
+        ) : null}
+      </div>
+
+      <form
+        noValidate
+        encType="multipart/form-data"
+        onSubmit={(event) => onSubmit(event, document)}
+        className="mt-6 border-t border-white/10 pt-5"
+      >
+        <input type="hidden" name="report_type_id" value={document.reportTypeId} />
+
+        {isVideo ? (
+          <>
+            <input
+              type="url"
+              name="video_link"
+              value={videoDraft}
+              onChange={(event) =>
+                onVideoDraftChange(document.reportTypeId, event.target.value)
+              }
+              placeholder="Paste Google Drive or YouTube URL"
+              className={fieldClassName(cardFieldErrors?.videoLink)}
+            />
+            <p className="mt-2 min-h-5 text-xs text-red-400">
+              {cardFieldErrors?.videoLink ?? ""}
+            </p>
+            {cardError && !cardFieldErrors?.videoLink ? (
+              <p className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+                {cardError}
+              </p>
+            ) : null}
+            <DocumentSubmitButton
+              kind="video"
+              isUploaded={document.isUploaded}
+              isPending={isPending}
+            />
+          </>
+        ) : (
+          <>
+            <input
+              key={fileInputKey}
+              name="document_file"
+              type="file"
+              accept=".pdf,.doc,.docx"
+              className={documentFileFieldClassName(cardFieldErrors?.documentFile)}
+              onChange={(event) =>
+                onFileChange(
+                  document.reportTypeId,
+                  event.target.files?.[0]?.name ?? "",
+                )
+              }
+            />
+            <p className="mt-2 min-h-5 text-xs text-slate-500">
+              {selectedFileName
+                ? `Selected: ${selectedFileName}`
+                : document.fileName
+                  ? `Current: ${document.fileName}`
+                  : "Accepted formats: .pdf, .doc, .docx"}
+            </p>
+            <p className="min-h-5 text-xs text-red-400">
+              {cardFieldErrors?.documentFile ?? ""}
+            </p>
+            {cardError && !cardFieldErrors?.documentFile ? (
+              <p className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+                {cardError}
+              </p>
+            ) : null}
+            <DocumentSubmitButton
+              kind="file"
+              isUploaded={document.isUploaded}
+              isPending={isPending}
+            />
+          </>
+        )}
+      </form>
+    </article>
+  );
+}
 
 export function StudentDashboardClient({
   initialProfile,
@@ -55,9 +270,15 @@ export function StudentDashboardClient({
       {} as Record<number, string>,
     ),
   );
-  const [selectedFiles, setSelectedFiles] = useState<Record<number, File | null>>({});
+  const [selectedFileNames, setSelectedFileNames] = useState<Record<number, string>>({});
   const [fileInputKeys, setFileInputKeys] = useState<Record<number, number>>({});
-  const [pendingAction, setPendingAction] = useState<{ id: number; kind: "file" | "video" } | null>(null);
+  const [pendingAction, setPendingAction] = useState<{
+    id: number;
+    kind: "file" | "video";
+  } | null>(null);
+  const [actionState, setActionState] = useState<StudentDashboardFormActionState>(
+    initialDocumentActionState,
+  );
   const [toast, setToast] = useState<Toast | null>(null);
 
   function showToast(message: string, type: Toast["type"]) {
@@ -72,68 +293,84 @@ export function StudentDashboardClient({
     }, 4000);
   }
 
-  async function handleFileUpload(reportTypeId: number) {
-    const selectedFile = selectedFiles[reportTypeId];
-    const extension = selectedFile?.name.split(".").pop()?.toLowerCase();
+  async function handleDocumentSubmit(
+    event: FormEvent<HTMLFormElement>,
+    document: DocumentItem,
+  ) {
+    event.preventDefault();
 
-    if (!selectedFile) {
-      showToast("Please select a file first.", "error");
-      return;
-    }
+    const submissionKind = document.reportName.toLowerCase().includes("presentation")
+      ? "video"
+      : "file";
 
-    if (!extension || !["pdf", "doc", "docx"].includes(extension)) {
-      showToast("Only .pdf, .doc, and .docx files are allowed.", "error");
-      return;
-    }
-
-    setPendingAction({ id: reportTypeId, kind: "file" });
-
-    await new Promise((resolve) => window.setTimeout(resolve, 700));
-
-    setDocuments((current) =>
-      current.map((document) =>
-        document.reportTypeId === reportTypeId
-          ? { ...document, isUploaded: true, fileName: selectedFile.name, videoLink: null }
-          : document,
-      ),
-    );
-    setSelectedFiles((current) => ({ ...current, [reportTypeId]: null }));
-    setFileInputKeys((current) => ({
-      ...current,
-      [reportTypeId]: (current[reportTypeId] ?? 0) + 1,
-    }));
-    setPendingAction(null);
-    showToast("Document uploaded successfully.", "success");
-  }
-
-  async function handleVideoSubmit(reportTypeId: number) {
-    const videoLink = (videoDrafts[reportTypeId] ?? "").trim();
-
-    if (!videoLink) {
-      showToast("Please enter a video link.", "error");
-      return;
-    }
+    setPendingAction({ id: document.reportTypeId, kind: submissionKind });
 
     try {
-      new URL(videoLink);
-    } catch {
-      showToast("Please enter a valid URL.", "error");
-      return;
+      const formData = new FormData(event.currentTarget);
+      const result = await submitStudentDashboardFormAction(
+        initialDocumentActionState,
+        formData,
+      );
+
+      setActionState(result);
+
+      if (result.success && result.submission) {
+        const { reportTypeId, fileName, videoLink } = result.submission;
+
+        setDocuments((current) =>
+          current.map((currentDocument) =>
+            currentDocument.reportTypeId === reportTypeId
+              ? {
+                  ...currentDocument,
+                  isUploaded: true,
+                  fileName,
+                  videoLink,
+                }
+              : currentDocument,
+          ),
+        );
+
+        if (result.submissionKind === "video") {
+          setVideoDrafts((current) => ({
+            ...current,
+            [reportTypeId]: videoLink ?? "",
+          }));
+          showToast("Presentation link saved successfully.", "success");
+        } else {
+          setSelectedFileNames((current) => ({
+            ...current,
+            [reportTypeId]: "",
+          }));
+          setFileInputKeys((current) => ({
+            ...current,
+            [reportTypeId]: (current[reportTypeId] ?? 0) + 1,
+          }));
+          showToast("Form uploaded successfully.", "success");
+        }
+
+        return;
+      }
+
+      if (result.error) {
+        showToast(result.error, "error");
+      }
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Submission failed. Please try again.";
+      const failedState: StudentDashboardFormActionState = {
+        success: false,
+        error: message,
+        responseId: `${Date.now()}`,
+        reportTypeId: document.reportTypeId,
+        submissionKind,
+        submission: null,
+      };
+
+      setActionState(failedState);
+      showToast(message, "error");
+    } finally {
+      setPendingAction(null);
     }
-
-    setPendingAction({ id: reportTypeId, kind: "video" });
-
-    await new Promise((resolve) => window.setTimeout(resolve, 700));
-
-    setDocuments((current) =>
-      current.map((document) =>
-        document.reportTypeId === reportTypeId
-          ? { ...document, isUploaded: true, fileName: null, videoLink }
-          : document,
-      ),
-    );
-    setPendingAction(null);
-    showToast("Video link submitted successfully.", "success");
   }
 
   const uploadedCount = documents.filter((document) => document.isUploaded).length;
@@ -192,127 +429,33 @@ export function StudentDashboardClient({
         <section className="home-rise mt-8">
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
             {documents.map((document) => {
-              const isVideo = document.reportName.toLowerCase().includes("presentation");
               const isPending = pendingAction?.id === document.reportTypeId;
 
               return (
-                <article
+                <DocumentCard
                   key={document.reportTypeId}
-                  className="flex h-full flex-col justify-between rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl transition hover:-translate-y-1.5 hover:border-indigo-400/35"
-                >
-                  <div>
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold ${
-                        document.isUploaded ? "bg-emerald-500/15 text-emerald-300" : "bg-red-500/15 text-red-300"
-                      }`}
-                    >
-                      {document.isUploaded ? (
-                        <CheckCircle2 className="h-4 w-4" strokeWidth={1.8} />
-                      ) : (
-                        <XCircle className="h-4 w-4" strokeWidth={1.8} />
-                      )}
-                      {document.isUploaded ? "Uploaded" : "Missing"}
-                    </span>
-
-                    <h3 className="mt-4 text-xl font-bold text-white">{document.reportName}</h3>
-
-                    {document.fileName ? (
-                      <p className="mt-3 inline-flex max-w-full items-center gap-2 text-sm text-slate-400">
-                        <FileText className="h-4 w-4 shrink-0" strokeWidth={1.8} />
-                        <span className="truncate">{document.fileName}</span>
-                      </p>
-                    ) : null}
-
-                    {document.videoLink ? (
-                      <a
-                        href={document.videoLink}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-indigo-300 transition hover:text-indigo-200"
-                      >
-                        <PlayCircle className="h-4 w-4" strokeWidth={1.8} />
-                        Watch Video
-                      </a>
-                    ) : null}
-                  </div>
-
-                  <div className="mt-6 border-t border-white/10 pt-5">
-                    {isVideo ? (
-                      <>
-                        <input
-                          type="url"
-                          value={videoDrafts[document.reportTypeId] ?? ""}
-                          onChange={(event) =>
-                            setVideoDrafts((current) => ({
-                              ...current,
-                              [document.reportTypeId]: event.target.value,
-                            }))
-                          }
-                          placeholder="Paste Google Drive or YouTube URL"
-                          className={inputClassName}
-                        />
-                        <button
-                          type="button"
-                          disabled={isPending}
-                          onClick={() => handleVideoSubmit(document.reportTypeId)}
-                          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.25)] transition hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-70"
-                        >
-                          {isPending && pendingAction?.kind === "video" ? (
-                            <>
-                              <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-                              Saving...
-                            </>
-                          ) : (
-                            <>
-                              <Link2 className="h-4 w-4" strokeWidth={1.8} />
-                              {document.isUploaded ? "Update Link" : "Submit Link"}
-                            </>
-                          )}
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <input
-                          key={fileInputKeys[document.reportTypeId] ?? 0}
-                          type="file"
-                          accept=".pdf,.doc,.docx"
-                          className={`${inputClassName} cursor-pointer border-dashed file:mr-4 file:rounded-lg file:border-0 file:bg-indigo-500/15 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-indigo-200`}
-                          onChange={(event) =>
-                            setSelectedFiles((current) => ({
-                              ...current,
-                              [document.reportTypeId]: event.target.files?.[0] ?? null,
-                            }))
-                          }
-                        />
-                        <p className="mt-2 min-h-5 text-xs text-slate-500">
-                          {selectedFiles[document.reportTypeId]?.name
-                            ? `Selected: ${selectedFiles[document.reportTypeId]?.name}`
-                            : document.fileName
-                              ? `Current: ${document.fileName}`
-                              : "Accepted formats: .pdf, .doc, .docx"}
-                        </p>
-                        <button
-                          type="button"
-                          disabled={isPending}
-                          onClick={() => handleFileUpload(document.reportTypeId)}
-                          className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-[0_0_20px_rgba(99,102,241,0.25)] transition hover:-translate-y-0.5 disabled:translate-y-0 disabled:opacity-70"
-                        >
-                          {isPending && pendingAction?.kind === "file" ? (
-                            <>
-                              <LoaderCircle className="h-4 w-4 animate-spin" strokeWidth={1.8} />
-                              Uploading...
-                            </>
-                          ) : (
-                            <>
-                              <Upload className="h-4 w-4" strokeWidth={1.8} />
-                              {document.isUploaded ? "Replace File" : "Upload File"}
-                            </>
-                          )}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </article>
+                  actionState={actionState}
+                  document={document}
+                  fileInputKey={fileInputKeys[document.reportTypeId] ?? 0}
+                  isPending={isPending}
+                  onFileChange={(reportTypeId, fileName) =>
+                    setSelectedFileNames((current) => ({
+                      ...current,
+                      [reportTypeId]: fileName,
+                    }))
+                  }
+                  onSubmit={(event, currentDocument) =>
+                    void handleDocumentSubmit(event, currentDocument)
+                  }
+                  onVideoDraftChange={(reportTypeId, value) =>
+                    setVideoDrafts((current) => ({
+                      ...current,
+                      [reportTypeId]: value,
+                    }))
+                  }
+                  selectedFileName={selectedFileNames[document.reportTypeId] ?? ""}
+                  videoDraft={videoDrafts[document.reportTypeId] ?? ""}
+                />
               );
             })}
           </div>
@@ -323,7 +466,11 @@ export function StudentDashboardClient({
         <div className="fixed right-6 top-20 z-40">
           <div
             className={`rounded-2xl px-5 py-4 text-sm font-medium text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl ${
-              toast.type === "success" ? "bg-emerald-500/90" : toast.type === "error" ? "bg-red-500/90" : "bg-blue-500/90"
+              toast.type === "success"
+                ? "bg-emerald-500/90"
+                : toast.type === "error"
+                  ? "bg-red-500/90"
+                  : "bg-blue-500/90"
             }`}
           >
             {toast.message}

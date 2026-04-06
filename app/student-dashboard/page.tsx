@@ -19,6 +19,14 @@ const getRedirectPathForRole = (role?: string) => {
   return "/student-login";
 };
 
+const asSubmissionMetadata = (value: unknown): Record<string, unknown> | null => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return null;
+  }
+
+  return value as Record<string, unknown>;
+};
+
 export default async function StudentDashboardPage() {
   const session = await auth();
   const user = session?.user;
@@ -44,7 +52,7 @@ export default async function StudentDashboardPage() {
   const supabase = await supabaseClient();
   const [formTypesResponse, submittedFormsResponse] = await Promise.all([
     supabase.from("formtype").select("id, name").order("id", { ascending: true }),
-    supabase.from("form").select("formtypeid, url").eq("studentid", student.id),
+    supabase.from("form").select("formtypeid, url, data").eq("studentid", student.id),
   ]);
 
   if (formTypesResponse.error) {
@@ -59,30 +67,54 @@ export default async function StudentDashboardPage() {
 
   const formTypes = formTypesResponse.data ?? [];
   const submittedForms = submittedFormsResponse.data ?? [];
-  const submissionUrlByFormTypeId = new Map<number, string>();
+  const submissionByFormTypeId = new Map<
+    number,
+    {
+      url: string | null;
+      data: Record<string, unknown> | null;
+    }
+  >();
 
   submittedForms.forEach((submission) => {
-    if (submission.url) {
-      submissionUrlByFormTypeId.set(submission.formtypeid, submission.url);
-    }
+    submissionByFormTypeId.set(submission.formtypeid, {
+      url: submission.url,
+      data: asSubmissionMetadata(submission.data),
+    });
   });
 
   const initialDocuments = formTypes.map((formType) => {
-    const formUrl = submissionUrlByFormTypeId.get(formType.id) ?? null;
-    const isVideo = formType.name.toLowerCase().includes("presentation");
+    const submission = submissionByFormTypeId.get(formType.id);
+    const formLocation = submission?.url ?? null;
+    const submissionData = submission?.data;
+    const submissionKind =
+      typeof submissionData?.submissionKind === "string"
+        ? submissionData.submissionKind
+        : null;
+    const isVideo =
+      submissionKind === "video" ||
+      formType.name.toLowerCase().includes("presentation");
 
     let fileName: string | null = null;
     let videoLink: string | null = null;
 
-    if (formUrl) {
+    if (formLocation) {
       if (isVideo) {
-        videoLink = formUrl;
+        videoLink = formLocation;
       } else {
-        try {
-          const pathname = new URL(formUrl).pathname;
-          fileName = decodeURIComponent(pathname.split("/").pop() ?? "");
-        } catch {
-          fileName = formUrl.split("/").pop() ?? formUrl;
+        const storedFileName =
+          typeof submissionData?.fileName === "string"
+            ? submissionData.fileName
+            : null;
+
+        if (storedFileName) {
+          fileName = storedFileName;
+        } else {
+          try {
+            const pathname = new URL(formLocation).pathname;
+            fileName = decodeURIComponent(pathname.split("/").pop() ?? "");
+          } catch {
+            fileName = formLocation.split("/").pop() ?? formLocation;
+          }
         }
       }
     }
@@ -90,7 +122,7 @@ export default async function StudentDashboardPage() {
     return {
       reportTypeId: formType.id,
       reportName: formType.name,
-      isUploaded: Boolean(formUrl),
+      isUploaded: Boolean(formLocation),
       fileName,
       videoLink,
     };
