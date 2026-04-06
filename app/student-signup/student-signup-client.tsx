@@ -4,14 +4,11 @@ import { LoaderCircle, NotebookPen } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { registerStudentAction } from "../action/student";
+import type { StudentSignupRequest } from "../action/student";
 import { BackgroundParticles } from "../ui/background-particles";
 
-type FormValues = {
-  fullName: string;
-  indexNumber: string;
-  email: string;
-  password: string;
-};
+type FormValues = StudentSignupRequest;
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 type Toast = {
@@ -95,7 +92,19 @@ export function StudentSignupClient() {
     setIsSubmitting(true);
 
     try {
-      await new Promise((resolve) => window.setTimeout(resolve, 900));
+      const result = await registerStudentAction(values);
+
+      if (!result.success) {
+        setErrors((current) => ({
+          ...current,
+          ...(result.fieldErrors ?? {}),
+        }));
+        showToast(result.error ?? "Registration failed. Please try again.", "error");
+        return;
+      }
+
+      setValues(initialValues);
+      setErrors({});
       showToast("Account registered successfully.", "success");
       window.setTimeout(() => {
         router.push("/student-login");
