@@ -11,7 +11,7 @@ const adminRoutePrefixes = [
   "/logout",
 ];
 
-const studentRoutePrefixes = ["/student-dashboard"];
+const studentRoutePrefixes = ["/student-dashboard", "/submit-cv"];
 
 const matchesRoutePrefix = (pathname: string, prefixes: string[]) => {
   return prefixes.some((prefix) => {

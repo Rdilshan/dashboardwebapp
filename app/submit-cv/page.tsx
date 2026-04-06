@@ -1,6 +1,9 @@
+import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { FileText } from "lucide-react";
 import Link from "next/link";
+import { auth } from "@/auth";
+import { getStudentById } from "@/lib/auth/student";
 import { BackgroundParticles } from "../ui/background-particles";
 import { SubmitCvForm } from "./submit-cv-form";
 
@@ -10,7 +13,36 @@ export const metadata: Metadata = {
     "Submit your CV and details for industrial training internship placements.",
 };
 
-export default function SubmitCvPage() {
+const getRedirectPathForRole = (role?: string) => {
+  if (role === "admin") {
+    return "/dashboard";
+  }
+
+  return "/student-login";
+};
+
+export default async function SubmitCvPage() {
+  const session = await auth();
+  const user = session?.user;
+
+  if (!user) {
+    redirect("/student-login");
+  }
+
+  if (user.role !== "student") {
+    redirect(getRedirectPathForRole(user.role));
+  }
+
+  const student = await getStudentById(user.id);
+
+  if (!student) {
+    redirect("/student-login");
+  }
+
+  if (student.hasCv) {
+    redirect("/student-dashboard");
+  }
+
   return (
     <main className="relative isolate flex min-h-screen flex-1 flex-col overflow-hidden bg-[#0a0e1a] text-slate-50">
       <BackgroundParticles />

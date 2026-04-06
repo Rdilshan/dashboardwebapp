@@ -2,6 +2,10 @@
 
 import { AuthError } from "next-auth";
 import { signIn, signOut } from "@/auth";
+import {
+  getStudentRedirectPath,
+  validateStudentCredentials,
+} from "@/lib/auth/student";
 
 export type LoginRequest = {
   username: string;
@@ -109,14 +113,29 @@ export async function studentLoginAction(
   }
 
   try {
+    const student = await validateStudentCredentials({
+      indexNumber,
+      password,
+    });
+
+    if (!student) {
+      return {
+        success: false,
+        error: "Invalid index number or password.",
+        redirectTo: null,
+        indexNumber,
+      };
+    }
+
+    const targetPath = getStudentRedirectPath(student);
     const result = await signIn("student-credentials", {
       indexNumber,
       password,
       redirect: false,
-      redirectTo: "/student-dashboard",
+      redirectTo: targetPath,
     });
 
-    const redirectTo = toRelativeUrl(String(result ?? "/student-dashboard"));
+    const redirectTo = toRelativeUrl(String(result ?? targetPath));
     const redirectUrl = new URL(redirectTo, "http://localhost");
     const authError = redirectUrl.searchParams.get("error");
 
