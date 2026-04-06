@@ -24,30 +24,20 @@ type Toast = {
 type DocumentStatus = {
   isUploaded: boolean;
   fileName: string | null;
+  fileUrl: string | null;
   videoLink: string | null;
 };
-
-const reportTypes = [
-  "Form A",
-  "Form B",
-  "Form C1",
-  "Form C2",
-  "Form C3",
-  "Form C4",
-  "Form D",
-  "Form E",
-  "Weekly Journal",
-  "Final Presentation",
-  "Final Report",
-] as const;
-
-type ReportType = (typeof reportTypes)[number];
 
 type MatrixRow = {
   studentId: number;
   indexNumber: string;
   fullName: string;
-  documents: Record<ReportType, DocumentStatus>;
+  documents: Record<string, DocumentStatus>;
+};
+
+type AdminMatrixClientProps = {
+  reportTypes: string[];
+  rows: MatrixRow[];
 };
 
 const inputClassName =
@@ -56,148 +46,15 @@ const inputClassName =
 const navButtonClassName =
   "inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-sm font-medium text-slate-300 transition hover:border-indigo-400/45 hover:text-indigo-200";
 
-const uploadedFile = (fileName: string): DocumentStatus => ({
-  isUploaded: true,
-  fileName,
-  videoLink: null,
-});
-
-const uploadedVideo = (videoLink: string): DocumentStatus => ({
-  isUploaded: true,
-  fileName: null,
-  videoLink,
-});
-
-const missingDocument: DocumentStatus = {
-  isUploaded: false,
-  fileName: null,
-  videoLink: null,
-};
-
-function buildDocuments(
-  overrides: Partial<Record<ReportType, DocumentStatus>>,
-): Record<ReportType, DocumentStatus> {
-  return reportTypes.reduce(
-    (documents, reportType) => {
-      documents[reportType] = overrides[reportType] ?? missingDocument;
-      return documents;
-    },
-    {} as Record<ReportType, DocumentStatus>,
-  );
-}
-
-const matrixRows: MatrixRow[] = [
-  {
-    studentId: 1,
-    indexNumber: "22CSE0001",
-    fullName: "Ayesha Fernando",
-    documents: buildDocuments({
-      "Form A": uploadedFile("22CSE0001-form-a.pdf"),
-      "Form B": uploadedFile("22CSE0001-form-b.pdf"),
-      "Form C1": uploadedFile("22CSE0001-form-c1.pdf"),
-      "Form C2": uploadedFile("22CSE0001-form-c2.pdf"),
-      "Form D": uploadedFile("22CSE0001-form-d.pdf"),
-      "Form E": uploadedFile("22CSE0001-form-e.pdf"),
-      "Weekly Journal": uploadedFile("22CSE0001-weekly-journal.pdf"),
-      "Final Presentation": uploadedVideo("https://youtu.be/ayesha-demo"),
-      "Final Report": uploadedFile("22CSE0001-final-report.pdf"),
-    }),
-  },
-  {
-    studentId: 2,
-    indexNumber: "22CSE0007",
-    fullName: "Kavindu Perera",
-    documents: buildDocuments({
-      "Form A": uploadedFile("22CSE0007-form-a.pdf"),
-      "Form B": uploadedFile("22CSE0007-form-b.pdf"),
-      "Form C2": uploadedFile("22CSE0007-form-c2.pdf"),
-      "Form D": uploadedFile("22CSE0007-form-d.pdf"),
-      "Weekly Journal": uploadedFile("22CSE0007-weekly-journal.pdf"),
-      "Final Presentation": uploadedVideo("https://drive.google.com/file/d/kavindu-presentation"),
-      "Final Report": uploadedFile("22CSE0007-final-report.pdf"),
-    }),
-  },
-  {
-    studentId: 3,
-    indexNumber: "22CSE0012",
-    fullName: "Nethmi Jayasuriya",
-    documents: buildDocuments({
-      "Form A": uploadedFile("22CSE0012-form-a.pdf"),
-      "Form B": uploadedFile("22CSE0012-form-b.pdf"),
-      "Form C1": uploadedFile("22CSE0012-form-c1.pdf"),
-      "Form C2": uploadedFile("22CSE0012-form-c2.pdf"),
-      "Form C3": uploadedFile("22CSE0012-form-c3.pdf"),
-      "Form C4": uploadedFile("22CSE0012-form-c4.pdf"),
-      "Form D": uploadedFile("22CSE0012-form-d.pdf"),
-      "Form E": uploadedFile("22CSE0012-form-e.pdf"),
-      "Weekly Journal": uploadedFile("22CSE0012-weekly-journal.pdf"),
-    }),
-  },
-  {
-    studentId: 4,
-    indexNumber: "22CSE0020",
-    fullName: "Dineth Silva",
-    documents: buildDocuments({
-      "Form A": uploadedFile("22CSE0020-form-a.pdf"),
-      "Form B": uploadedFile("22CSE0020-form-b.pdf"),
-      "Form C1": uploadedFile("22CSE0020-form-c1.pdf"),
-      "Form C2": uploadedFile("22CSE0020-form-c2.pdf"),
-      "Form C3": uploadedFile("22CSE0020-form-c3.pdf"),
-      "Weekly Journal": uploadedFile("22CSE0020-weekly-journal.pdf"),
-      "Final Presentation": uploadedVideo("https://youtu.be/dineth-ui-showcase"),
-    }),
-  },
-  {
-    studentId: 5,
-    indexNumber: "22CSE0025",
-    fullName: "Isuru Wickramasinghe",
-    documents: buildDocuments({
-      "Form A": uploadedFile("22CSE0025-form-a.pdf"),
-      "Form B": uploadedFile("22CSE0025-form-b.pdf"),
-      "Form C1": uploadedFile("22CSE0025-form-c1.pdf"),
-      "Form D": uploadedFile("22CSE0025-form-d.pdf"),
-      "Form E": uploadedFile("22CSE0025-form-e.pdf"),
-      "Weekly Journal": uploadedFile("22CSE0025-weekly-journal.pdf"),
-      "Final Report": uploadedFile("22CSE0025-final-report.pdf"),
-    }),
-  },
-  {
-    studentId: 6,
-    indexNumber: "22CSE0032",
-    fullName: "Pasindu Hettiarachchi",
-    documents: buildDocuments({
-      "Form A": uploadedFile("22CSE0032-form-a.pdf"),
-      "Form B": uploadedFile("22CSE0032-form-b.pdf"),
-      "Form C1": uploadedFile("22CSE0032-form-c1.pdf"),
-      "Form C2": uploadedFile("22CSE0032-form-c2.pdf"),
-      "Form C3": uploadedFile("22CSE0032-form-c3.pdf"),
-      "Form C4": uploadedFile("22CSE0032-form-c4.pdf"),
-      "Form D": uploadedFile("22CSE0032-form-d.pdf"),
-      "Form E": uploadedFile("22CSE0032-form-e.pdf"),
-      "Weekly Journal": uploadedFile("22CSE0032-weekly-journal.pdf"),
-      "Final Presentation": uploadedVideo("https://youtu.be/pasindu-data-demo"),
-      "Final Report": uploadedFile("22CSE0032-final-report.pdf"),
-    }),
-  },
-  {
-    studentId: 7,
-    indexNumber: "22CSE0039",
-    fullName: "Senuri De Alwis",
-    documents: buildDocuments({
-      "Form A": uploadedFile("22CSE0039-form-a.pdf"),
-      "Form B": uploadedFile("22CSE0039-form-b.pdf"),
-      "Form D": uploadedFile("22CSE0039-form-d.pdf"),
-      "Weekly Journal": uploadedFile("22CSE0039-weekly-journal.pdf"),
-    }),
-  },
-];
-
-export function AdminMatrixClient() {
+export function AdminMatrixClient({
+  reportTypes,
+  rows,
+}: AdminMatrixClientProps) {
   const toastTimeoutRef = useRef<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [toast, setToast] = useState<Toast | null>(null);
 
-  const filteredRows = matrixRows.filter((row) => {
+  const filteredRows = rows.filter((row) => {
     const query = searchTerm.trim().toLowerCase();
 
     if (!query) {
@@ -210,11 +67,10 @@ export function AdminMatrixClient() {
     );
   });
 
-  const uploadedCount = matrixRows.reduce((count, row) => {
+  const uploadedCount = rows.reduce((count, row) => {
     return (
       count +
-      reportTypes.filter((reportType) => row.documents[reportType].isUploaded)
-        .length
+      reportTypes.filter((reportType) => row.documents[reportType]?.isUploaded).length
     );
   }, 0);
 
@@ -232,13 +88,13 @@ export function AdminMatrixClient() {
 
   function handleExportCsv() {
     const header = ["Index Number", "Full Name", ...reportTypes];
-    const rows = matrixRows.map((row) => [
+    const csvRows = rows.map((row) => [
       row.indexNumber,
       row.fullName,
       ...reportTypes.map((reportType) => {
         const document = row.documents[reportType];
 
-        if (!document.isUploaded) {
+        if (!document?.isUploaded) {
           return "Missing";
         }
 
@@ -246,11 +102,15 @@ export function AdminMatrixClient() {
           return `Video: ${document.videoLink}`;
         }
 
-        return "Uploaded";
+        if (document.fileUrl) {
+          return `File: ${document.fileUrl}`;
+        }
+
+        return document.fileName ? `File: ${document.fileName}` : "Uploaded";
       }),
     ]);
 
-    const csv = [header, ...rows]
+    const csv = [header, ...csvRows]
       .map((row) => row.map(escapeCsvValue).join(","))
       .join("\n");
 
@@ -349,7 +209,7 @@ export function AdminMatrixClient() {
 
               <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                 <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
-                  {matrixRows.length} Students
+                  {rows.length} Students
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5">
                   {reportTypes.length} Report Types
@@ -375,7 +235,7 @@ export function AdminMatrixClient() {
                     {reportTypes.map((reportType) => (
                       <th
                         key={reportType}
-                        className="sticky top-0 bg-[#121a2b]/95 px-4 py-4 font-semibold whitespace-nowrap backdrop-blur"
+                        className="sticky top-0 whitespace-nowrap bg-[#121a2b]/95 px-4 py-4 font-semibold backdrop-blur"
                       >
                         {reportType}
                       </th>
@@ -412,7 +272,7 @@ export function AdminMatrixClient() {
                               key={`${row.studentId}-${reportType}`}
                               className="px-4 py-4 text-center"
                             >
-                              {document.isUploaded ? (
+                              {document?.isUploaded ? (
                                 document.videoLink ? (
                                   <a
                                     href={document.videoLink}
@@ -426,6 +286,19 @@ export function AdminMatrixClient() {
                                       strokeWidth={1.8}
                                     />
                                     Video
+                                  </a>
+                                ) : document.fileUrl ? (
+                                  <a
+                                    href={document.fileUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center justify-center text-emerald-400 transition hover:text-emerald-300"
+                                    title={document.fileName ?? "View file"}
+                                  >
+                                    <CheckCircle2
+                                      className="h-5 w-5"
+                                      strokeWidth={1.8}
+                                    />
                                   </a>
                                 ) : (
                                   <span
@@ -485,6 +358,3 @@ export function AdminMatrixClient() {
 function escapeCsvValue(value: string) {
   return `"${value.replaceAll('"', '""')}"`;
 }
-
-
-
