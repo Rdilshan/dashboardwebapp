@@ -9,8 +9,6 @@ import { StudentLogoutButton } from "../ui/student-logout-button";
 import { BackgroundParticles } from "../ui/background-particles";
 import { SubmitCvForm } from "./submit-cv-form";
 
-
-
 export const metadata: Metadata = {
   title: "Submit Your CV | Industrial Training Portal",
   description:
