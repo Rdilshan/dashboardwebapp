@@ -4,16 +4,6 @@ import { ChevronDown, Upload } from "lucide-react";
 import type { ChangeEvent, DragEvent, FormEvent } from "react";
 import { useRef, useState } from "react";
 
-const preferredRoles = [
-  "Software Engineer",
-  "QA Engineer",
-  "Business Analyst",
-  "UI/UX Designer",
-  "Network Engineer",
-  "Data Scientist",
-  "Other",
-] as const;
-
 type SubmitCvStudentDetails = {
   fullName: string;
   indexNumber: string;
@@ -21,10 +11,14 @@ type SubmitCvStudentDetails = {
 };
 
 type SubmitCvFormProps = {
+  preferredRoles: string[];
   student: SubmitCvStudentDetails;
 };
 
-export function SubmitCvForm({ student }: SubmitCvFormProps) {
+export function SubmitCvForm({
+  preferredRoles,
+  student,
+}: SubmitCvFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [isDragging, setIsDragging] = useState(false);

@@ -4,6 +4,7 @@ import { FileText } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getStudentById } from "@/lib/auth/student";
+import { supabaseClient } from "@/utils/supabase/server";
 import { StudentLogoutButton } from "../ui/student-logout-button";
 import { BackgroundParticles } from "../ui/background-particles";
 import { SubmitCvForm } from "./submit-cv-form";
@@ -42,6 +43,16 @@ export default async function SubmitCvPage() {
 
   if (student.hasCv) {
     redirect("/student-dashboard");
+  }
+
+  const supabase = await supabaseClient();
+  const { data: roles, error: rolesError } = await supabase
+    .from("role")
+    .select("name")
+    .order("id", { ascending: true });
+
+  if (rolesError) {
+    throw new Error(`Failed to fetch roles: ${rolesError.message}`);
   }
 
   return (
@@ -96,6 +107,7 @@ export default async function SubmitCvPage() {
             style={{ animationDelay: "0.3s" }}
           >
             <SubmitCvForm
+              preferredRoles={roles.map((role) => role.name)}
               student={{
                 fullName: student.name,
                 indexNumber: student.indexNumber,
