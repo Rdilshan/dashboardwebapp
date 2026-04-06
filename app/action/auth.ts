@@ -1,7 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
-import { signIn } from "@/auth";
+import { signIn, signOut } from "@/auth";
 
 export type LoginRequest = {
   username: string;
@@ -89,4 +89,7 @@ export async function adminLoginFormAction(
     username: String(formData.get("username") ?? ""),
     password: String(formData.get("password") ?? ""),
   });
+}
+export async function adminLogoutAction() {
+  await signOut({ redirectTo: "/login" });
 }

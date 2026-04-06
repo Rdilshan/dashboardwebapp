@@ -4,13 +4,13 @@ import {
   FileText,
   KeyRound,
   LoaderCircle,
-  LogOut,
   Settings,
   Shield,
 } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { BackgroundParticles } from "../ui/background-particles";
+import { AdminLogoutButton } from "../ui/admin-logout-button";
 
 type Toast = {
   message: string;
@@ -120,10 +120,7 @@ export function AdminSettingClient() {
                 <FileText className="h-4 w-4" strokeWidth={1.8} />
                 Dashboard
               </Link>
-              <Link href="/login" className={navButtonClassName}>
-                <LogOut className="h-4 w-4" strokeWidth={1.8} />
-                Logout
-              </Link>
+              <AdminLogoutButton className={navButtonClassName} />
             </div>
           </div>
         </header>
@@ -314,3 +311,6 @@ function FormField({
     </div>
   );
 }
+
+
+

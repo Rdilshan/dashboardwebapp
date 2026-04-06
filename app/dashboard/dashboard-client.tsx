@@ -4,7 +4,6 @@ import {
   Download,
   ExternalLink,
   FileText,
-  LogOut,
   Pencil,
   Search,
   Settings,
@@ -15,6 +14,7 @@ import {
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { BackgroundParticles } from "../ui/background-particles";
+import { AdminLogoutButton } from "../ui/admin-logout-button";
 
 type Role =
   | "Software Engineer"
@@ -279,10 +279,7 @@ export function DashboardClient() {
                 <Settings className="h-4 w-4" strokeWidth={1.8} />
                 Settings
               </Link>
-              <Link href="/login" className={navButtonClassName}>
-                <LogOut className="h-4 w-4" strokeWidth={1.8} />
-                Logout
-              </Link>
+              <AdminLogoutButton className={navButtonClassName} />
             </div>
           </div>
         </header>
@@ -814,3 +811,6 @@ function formatDate(value: string) {
     year: "numeric",
   }).format(new Date(value));
 }
+
+
+

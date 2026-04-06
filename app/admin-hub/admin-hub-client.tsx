@@ -1,8 +1,9 @@
 "use client";
 
-import { BarChart3, Home, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { BarChart3, Home, LayoutDashboard, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { BackgroundParticles } from "../ui/background-particles";
+import { AdminLogoutButton } from "../ui/admin-logout-button";
 
 const hubCardClassName =
   "group rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-8 text-center shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl transition duration-300 hover:-translate-y-2 hover:border-indigo-400/45 hover:shadow-[0_0_24px_rgba(99,102,241,0.22)]";
@@ -70,16 +71,16 @@ export function AdminHubClient() {
             <Home className="h-4 w-4" strokeWidth={1.8} />
             Homepage
           </Link>
-          <Link
-            href="/login"
+          <AdminLogoutButton
             className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-indigo-400/45 hover:text-indigo-200"
-          >
-            <LogOut className="h-4 w-4" strokeWidth={1.8} />
-            Logout
-          </Link>
+          />
         </div>
       </div>
 
     </main>
   );
 }
+
+
+
+
