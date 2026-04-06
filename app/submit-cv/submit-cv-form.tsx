@@ -14,7 +14,17 @@ const preferredRoles = [
   "Other",
 ] as const;
 
-export function SubmitCvForm() {
+type SubmitCvStudentDetails = {
+  fullName: string;
+  indexNumber: string;
+  email: string;
+};
+
+type SubmitCvFormProps = {
+  student: SubmitCvStudentDetails;
+};
+
+export function SubmitCvForm({ student }: SubmitCvFormProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [selectedFileName, setSelectedFileName] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -62,6 +72,11 @@ export function SubmitCvForm() {
       onSubmit={handleSubmit}
       className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.4)] backdrop-blur-xl sm:p-8 lg:p-10"
     >
+      <div className="mb-6 rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-4 text-sm text-slate-300">
+        Full name, index number, and email are pulled from your student account
+        and cannot be changed here.
+      </div>
+
       <div className="grid gap-5 lg:grid-cols-2 lg:gap-x-7 lg:gap-y-6">
         <FormField
           label="Full Name"
@@ -72,9 +87,10 @@ export function SubmitCvForm() {
               id="full_name"
               name="full_name"
               type="text"
-              placeholder="e.g. John Smith"
+              defaultValue={student.fullName}
+              readOnly
               required
-              className={inputClassName}
+              className={readOnlyInputClassName}
             />
           }
         />
@@ -88,9 +104,10 @@ export function SubmitCvForm() {
               id="index_number"
               name="index_number"
               type="text"
-              placeholder="e.g. 22CSE0000"
+              defaultValue={student.indexNumber}
+              readOnly
               required
-              className={inputClassName}
+              className={readOnlyInputClassName}
             />
           }
         />
@@ -149,9 +166,10 @@ export function SubmitCvForm() {
               id="email"
               name="email"
               type="email"
-              placeholder="e.g. john@example.com"
+              defaultValue={student.email}
+              readOnly
               required
-              className={inputClassName}
+              className={readOnlyInputClassName}
             />
           }
         />
@@ -270,5 +288,8 @@ function FormField({
     </div>
   );
 }
+
 const inputClassName =
   "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15";
+
+const readOnlyInputClassName = `${inputClassName} cursor-not-allowed border-white/5 bg-white/[0.02] text-slate-300 focus:border-white/5 focus:bg-white/[0.02] focus:ring-0`;

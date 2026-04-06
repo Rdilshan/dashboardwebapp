@@ -4,6 +4,7 @@ import { FileText } from "lucide-react";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { getStudentById } from "@/lib/auth/student";
+import { StudentLogoutButton } from "../ui/student-logout-button";
 import { BackgroundParticles } from "../ui/background-particles";
 import { SubmitCvForm } from "./submit-cv-form";
 
@@ -62,7 +63,12 @@ export default async function SubmitCvPage() {
               </span>
             </Link>
 
-            <div className="text-sm text-slate-500">Placement Submission</div>
+            <div className="flex items-center gap-4">
+              <div className="hidden text-sm text-slate-500 sm:block">
+                Placement Submission
+              </div>
+              <StudentLogoutButton className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:border-indigo-400/45 hover:text-indigo-200" />
+            </div>
           </div>
         </header>
 
@@ -89,7 +95,13 @@ export default async function SubmitCvPage() {
             className="home-rise mt-10"
             style={{ animationDelay: "0.3s" }}
           >
-            <SubmitCvForm />
+            <SubmitCvForm
+              student={{
+                fullName: student.name,
+                indexNumber: student.indexNumber,
+                email: student.email,
+              }}
+            />
           </div>
         </div>
 
