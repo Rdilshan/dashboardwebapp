@@ -48,7 +48,7 @@ export default async function SubmitCvPage() {
   const supabase = await supabaseClient();
   const { data: roles, error: rolesError } = await supabase
     .from("role")
-    .select("name")
+    .select("id, name")
     .order("id", { ascending: true });
 
   if (rolesError) {
@@ -107,7 +107,7 @@ export default async function SubmitCvPage() {
             style={{ animationDelay: "0.3s" }}
           >
             <SubmitCvForm
-              preferredRoles={roles.map((role) => role.name)}
+              preferredRoles={roles ?? []}
               student={{
                 fullName: student.name,
                 indexNumber: student.indexNumber,
