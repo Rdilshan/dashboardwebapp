@@ -3,94 +3,55 @@
 import { LoaderCircle, MonitorCheck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import { useActionState, useEffect } from "react";
+import { useFormStatus } from "react-dom";
+import { studentLoginFormAction } from "../action/auth";
+import type { StudentLoginActionState } from "../action/auth";
 import { BackgroundParticles } from "../ui/background-particles";
-
-type Toast = {
-  message: string;
-  type: "success" | "error" | "info";
-};
-
-type FormValues = {
-  indexNumber: string;
-  password: string;
-};
-
-type FormErrors = Partial<Record<keyof FormValues, string>>;
 
 const inputClassName =
   "w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-base text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-indigo-400 focus:bg-white/[0.06] focus:ring-4 focus:ring-indigo-500/15";
 
+const initialStudentLoginActionState: StudentLoginActionState = {
+  success: false,
+  error: null,
+  redirectTo: null,
+  indexNumber: "",
+};
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-3.5 text-base font-semibold text-white shadow-[0_0_24px_rgba(99,102,241,0.32)] transition hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] disabled:translate-y-0 disabled:opacity-70"
+    >
+      {pending ? (
+        <>
+          <LoaderCircle className="h-5 w-5 animate-spin" strokeWidth={1.8} />
+          Signing In...
+        </>
+      ) : (
+        "Sign In"
+      )}
+    </button>
+  );
+}
+
 export function StudentLoginClient() {
   const router = useRouter();
-  const toastTimeoutRef = useRef<number | null>(null);
-  const [values, setValues] = useState<FormValues>({
-    indexNumber: "",
-    password: "",
-  });
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState<Toast | null>(null);
+  const [state, formAction] = useActionState(
+    studentLoginFormAction,
+    initialStudentLoginActionState,
+  );
 
-  function showToast(message: string, type: Toast["type"]) {
-    if (toastTimeoutRef.current) {
-      window.clearTimeout(toastTimeoutRef.current);
+  useEffect(() => {
+    if (state.success && state.redirectTo) {
+      router.replace(state.redirectTo);
     }
-
-    setToast({ message, type });
-    toastTimeoutRef.current = window.setTimeout(() => {
-      setToast(null);
-      toastTimeoutRef.current = null;
-    }, 4000);
-  }
-
-  function updateField<Key extends keyof FormValues>(
-    key: Key,
-    value: FormValues[Key],
-  ) {
-    setValues((current) => ({ ...current, [key]: value }));
-    setErrors((current) => ({ ...current, [key]: undefined }));
-  }
-
-  function validate() {
-    const nextErrors: FormErrors = {};
-
-    if (!values.indexNumber.trim()) {
-      nextErrors.indexNumber = "Index number is required.";
-    }
-
-    if (!values.password) {
-      nextErrors.password = "Password is required.";
-    }
-
-    setErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
-  }
-
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (!validate()) {
-      showToast("Please fix the highlighted fields.", "error");
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      await new Promise((resolve) => window.setTimeout(resolve, 800));
-      showToast("Login successful. Redirecting...", "success");
-      window.setTimeout(() => {
-        router.push("/student-dashboard");
-      }, 900);
-    } catch {
-      showToast("Login failed. Please try again.", "error");
-    } finally {
-      window.setTimeout(() => {
-        setIsSubmitting(false);
-      }, 200);
-    }
-  }
+  }, [router, state.redirectTo, state.success]);
 
   return (
     <main className="relative isolate flex min-h-screen flex-1 items-center justify-center overflow-hidden bg-[#0a0e1a] px-6 py-8 text-slate-50">
@@ -109,23 +70,20 @@ export function StudentLoginClient() {
           </p>
         </div>
 
-        <form className="mt-8 space-y-5" noValidate onSubmit={handleSubmit}>
+        <form action={formAction} className="mt-8 space-y-5" noValidate>
           <Field
             label="Index Number"
             htmlFor="index_number"
-            error={errors.indexNumber}
             input={
               <input
                 id="index_number"
                 name="index_number"
                 type="text"
                 autoComplete="username"
-                value={values.indexNumber}
-                onChange={(event) =>
-                  updateField("indexNumber", event.target.value)
-                }
+                defaultValue={state.indexNumber}
+                required
                 placeholder="e.g. 22CSE0000"
-                className={fieldClassName(errors.indexNumber)}
+                className={inputClassName}
               />
             }
           />
@@ -134,18 +92,14 @@ export function StudentLoginClient() {
             <Field
               label="Password"
               htmlFor="password"
-              error={errors.password}
               input={
                 <input
                   id="password"
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  value={values.password}
-                  onChange={(event) =>
-                    updateField("password", event.target.value)
-                  }
-                  className={fieldClassName(errors.password)}
+                  required
+                  className={inputClassName}
                 />
               }
             />
@@ -160,20 +114,17 @@ export function StudentLoginClient() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-3.5 text-base font-semibold text-white shadow-[0_0_24px_rgba(99,102,241,0.32)] transition hover:-translate-y-0.5 hover:shadow-[0_0_30px_rgba(99,102,241,0.4)] disabled:translate-y-0 disabled:opacity-70"
-          >
-            {isSubmitting ? (
-              <>
-                <LoaderCircle className="h-5 w-5 animate-spin" strokeWidth={1.8} />
-                Signing In...
-              </>
-            ) : (
-              "Sign In"
-            )}
-          </button>
+          {state.error ? (
+            <p
+              role="alert"
+              aria-live="polite"
+              className="rounded-xl border border-rose-400/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200"
+            >
+              {state.error}
+            </p>
+          ) : null}
+
+          <SubmitButton />
         </form>
 
         <div className="mt-6 flex items-center justify-between gap-4 text-sm">
@@ -192,18 +143,6 @@ export function StudentLoginClient() {
           </Link>
         </div>
       </div>
-
-      {toast ? (
-        <div className="fixed right-6 top-20 z-40">
-          <div
-            className={`rounded-2xl px-5 py-4 text-sm font-medium text-white shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl ${
-              toast.type === "success" ? "bg-emerald-500/90" : toast.type === "error" ? "bg-red-500/90" : "bg-blue-500/90"
-            }`}
-          >
-            {toast.message}
-          </div>
-        </div>
-      ) : null}
     </main>
   );
 }
@@ -212,12 +151,10 @@ function Field({
   label,
   htmlFor,
   input,
-  error,
 }: {
   label: string;
   htmlFor: string;
   input: React.ReactNode;
-  error?: string;
 }) {
   return (
     <div className="space-y-2">
@@ -225,15 +162,6 @@ function Field({
         {label}
       </label>
       {input}
-      <p className="min-h-5 text-xs text-red-400">{error ?? ""}</p>
     </div>
   );
-}
-
-function fieldClassName(error?: string) {
-  return `${inputClassName} ${
-    error
-      ? "border-red-400/70 focus:border-red-400 focus:ring-red-500/15"
-      : ""
-  }`;
 }

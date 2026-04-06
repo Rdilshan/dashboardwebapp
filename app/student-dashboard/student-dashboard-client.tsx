@@ -6,14 +6,13 @@ import {
   GraduationCap,
   Link2,
   LoaderCircle,
-  LogOut,
   PlayCircle,
   Upload,
   XCircle,
 } from "lucide-react";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { BackgroundParticles } from "../ui/background-particles";
+import { StudentLogoutButton } from "../ui/student-logout-button";
 
 type Toast = {
   message: string;
@@ -175,13 +174,7 @@ export function StudentDashboardClient() {
               Track each required report and upload missing documents directly from your dashboard.
             </p>
           </div>
-          <Link
-            href="/student-login"
-            className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:border-indigo-400/45 hover:text-indigo-200 sm:self-auto"
-          >
-            <LogOut className="h-4 w-4" strokeWidth={1.8} />
-            Logout
-          </Link>
+          <StudentLogoutButton className="inline-flex items-center gap-2 self-start rounded-full border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:border-indigo-400/45 hover:text-indigo-200 sm:self-auto" />
         </header>
 
         <section className="home-rise mt-8 rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.35)] backdrop-blur-xl sm:p-8">

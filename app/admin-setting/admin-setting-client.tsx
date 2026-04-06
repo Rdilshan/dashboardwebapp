@@ -10,7 +10,6 @@ import {
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { BackgroundParticles } from "../ui/background-particles";
-import { BackgroundParticles } from "../ui/background-particles";
 import { AdminLogoutButton } from "../ui/admin-logout-button";
 
 type Toast = {
