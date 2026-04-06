@@ -4,9 +4,9 @@ import { LoaderCircle, NotebookPen } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { BackgroundParticles } from "../ui/background-particles";
 import { registerStudentAction } from "../action/student";
 import type { StudentSignupRequest } from "../action/student";
-import { BackgroundParticles } from "../ui/background-particles";
 
 type FormValues = StudentSignupRequest;
 
